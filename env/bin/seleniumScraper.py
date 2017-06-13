@@ -60,6 +60,9 @@ class Spider(object):
 
     def get_img_links(self, url):
         driver.get(url)
+
+        scroll_down()
+
         images = driver.find_elements(By.CLASS_NAME, self.img_class)
         print('Quantity of files: ', len(images))
         print('=' * 25)
@@ -69,7 +72,10 @@ class Spider(object):
         try:
             first_link = images[0].get_attribute('src')
             split_link = first_link.split('/')
-            directory = 'output/' + '-'.join(split_link[-1].split('-')[0:-1])
+            # directory = 'output/' + '-'.join(split_link[-1].split('-')[0:-1])
+            directory = 'output/' + split_link[-1].split('.')[0]
+            print(directory)
+
             for img in images:
                 link  = img.get_attribute('src')
                 img_links.append(link)
@@ -107,7 +113,9 @@ class Spider(object):
 def start(url):
     for u in url:
         driver.get(u)
-        time.sleep(2)
+
+        scroll_down()
+
         # spider = Spider(u, img_class='size-full', link_class='post-thumbnail')
         spider = Spider(u, img_class='lazyimg', link_class='albumPhoto')
         list_links = spider.get_link_list(driver)
@@ -116,9 +124,16 @@ def start(url):
             pics = spider.get_img_links(link)
             spider.create_pictures(pics)
 
+def scroll_down():
+    script = """
+    window.scrollBy(0,10);
+    """
+    for _ in range(2000):
+        driver.execute_script(script)
+        time.sleep(0.001)
 
 if __name__ == '__main__':
     driver = webdriver.Chrome()
     login()
-
+    
     driver.close()
